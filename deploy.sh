@@ -48,6 +48,9 @@ print_info "=============================================="
 print_info "更新系统包..."
 yum update -y
 
+print_info "安装EPEL源..."
+yum install -y epel-release
+
 print_info "安装基础依赖..."
 yum install -y python3 python3-devel nginx git curl gcc gcc-c++ openssl-devel
 
