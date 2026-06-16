@@ -48,11 +48,17 @@ print_info "=============================================="
 print_info "更新系统包..."
 yum update -y
 
-print_info "安装EPEL源..."
-yum install -y epel-release
-
 print_info "安装基础依赖..."
-yum install -y python3 python3-devel nginx git curl gcc gcc-c++ openssl-devel
+yum install -y python3 python3-devel git curl gcc gcc-c++ openssl-devel
+
+print_info "安装Nginx..."
+if ! command -v nginx &> /dev/null; then
+    curl -o /tmp/nginx.rpm http://nginx.org/packages/centos/8/x86_64/RPMS/nginx-1.30.2-1.el8.ngx.x86_64.rpm
+    rpm -ivh /tmp/nginx.rpm || true
+    dnf install nginx -y || true
+else
+    print_warning "Nginx已安装，跳过"
+fi
 
 print_info "安装Node.js 20.x..."
 curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
