@@ -10,14 +10,17 @@ NC='\033[0m'
 
 print_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
+    return 0
 }
 
 print_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1"
+    return 0
 }
 
 print_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
+    return 0
 }
 
 print_error() {
@@ -34,24 +37,23 @@ PROJECT_DIR="/opt/$PROJECT_NAME"
 BACKEND_DIR="$PROJECT_DIR/backend"
 FRONTEND_DIR="$PROJECT_DIR/frontend"
 ENV_FILE="$BACKEND_DIR/.env"
-NGINX_CONF="/etc/nginx/sites-available/$PROJECT_NAME"
-NGINX_LINK="/etc/nginx/sites-enabled/$PROJECT_NAME"
+NGINX_CONF="/etc/nginx/conf.d/$PROJECT_NAME.conf"
 SYSTEMD_SERVICE="/etc/systemd/system/$PROJECT_NAME-backend.service"
 
 print_info "=============================================="
 print_info "        学生积分商城 - 一键部署脚本"
+print_info "         (适配阿里云 Linux 3)"
 print_info "=============================================="
 
 print_info "更新系统包..."
-apt-get update -y
-apt-get upgrade -y
+yum update -y
 
 print_info "安装基础依赖..."
-apt-get install -y python3 python3-venv python3-dev nginx git curl build-essential libssl-dev
+yum install -y python3 python3-devel nginx git curl gcc gcc-c++ openssl-devel
 
 print_info "安装Node.js 20.x..."
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-apt-get install -y nodejs
+curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+yum install -y nodejs
 
 print_info "创建项目目录..."
 mkdir -p "$PROJECT_DIR"
@@ -63,7 +65,7 @@ if [ -d "$BACKEND_DIR" ]; then
 fi
 
 print_info "克隆项目代码..."
-git clone https://github.com/your-repo/points-mall.git "$PROJECT_DIR"
+git clone https://github.com/wangcai-a/points-mall.git "$PROJECT_DIR"
 
 print_info "设置Python虚拟环境..."
 python3 -m venv "$BACKEND_DIR/venv"
@@ -129,11 +131,6 @@ server {
 }
 EOF
 
-if [ -L "$NGINX_LINK" ]; then
-    rm "$NGINX_LINK"
-fi
-ln -s "$NGINX_CONF" "$NGINX_LINK"
-
 print_info "配置systemd服务..."
 cat > "$SYSTEMD_SERVICE" <<EOF
 [Unit]
@@ -162,13 +159,13 @@ systemctl enable nginx
 systemctl restart nginx
 
 print_info "设置防火墙规则..."
-if command -v ufw &> /dev/null; then
-    ufw allow 'Nginx Full'
-    ufw allow 8000/tcp
-    ufw --force enable
+if command -v firewall-cmd &> /dev/null; then
+    firewall-cmd --zone=public --add-service=http --permanent
+    firewall-cmd --zone=public --add-port=8000/tcp --permanent
+    firewall-cmd --reload
     print_success "防火墙规则已配置"
 else
-    print_warning "未安装ufw，请手动配置防火墙"
+    print_warning "未安装firewalld，请手动配置防火墙"
 fi
 
 print_info "验证服务状态..."
