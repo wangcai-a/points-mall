@@ -24,7 +24,7 @@ def login(db: Session, login_data: TeacherLogin) -> LoginResponse:
     
     return LoginResponse(
         token=access_token,
-        teacher=TeacherResponse.from_orm(teacher)
+        teacher=TeacherResponse.model_validate(teacher)
     )
 
 def get_teacher_by_id(db: Session, teacher_id: int) -> Teacher | None:

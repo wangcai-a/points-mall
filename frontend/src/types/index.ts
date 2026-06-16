@@ -7,7 +7,7 @@ export interface Teacher {
 export interface Student {
   id: number;
   name: string;
-  class: string;
+  class_name: string;
   total_points: number;
   created_at: string;
   updated_at: string;
@@ -149,9 +149,22 @@ export interface ImportPreview {
     row: number;
     student_id: number | null;
     name: string;
-    class: string;
+    class_name: string;
     change_amount: number;
     reason: string;
+    valid: boolean;
+    error?: string;
+  }>;
+  valid_count: number;
+  invalid_count: number;
+}
+
+export interface StudentImportPreview {
+  preview: Array<{
+    row: number;
+    name: string;
+    class_name: string;
+    total_points: number;
     valid: boolean;
     error?: string;
   }>;

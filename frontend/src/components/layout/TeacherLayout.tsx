@@ -1,12 +1,14 @@
 import { Outlet, useNavigate } from 'react-router-dom';
-import { GraduationCap, Users, Coins, ShoppingCart, Lottery, Upload, LogOut, User } from 'lucide-react';
+import { GraduationCap, Users, Coins, ShoppingCart, Ticket, Upload, LogOut, User, ShoppingBag } from 'lucide-react';
 import { useAuth } from '@/store/AuthContext';
 
 const menuItems = [
+  { path: '/student/products', icon: ShoppingBag, label: '积分商城' },
   { path: '/teacher/students', icon: Users, label: '学生管理' },
+  { path: '/teacher/products', icon: ShoppingCart, label: '商品管理' },
   { path: '/teacher/points', icon: Coins, label: '积分管理' },
   { path: '/teacher/orders', icon: ShoppingCart, label: '订单管理' },
-  { path: '/teacher/lottery', icon: Lottery, label: '抽奖功能' },
+  { path: '/teacher/lottery', icon: Ticket, label: '抽奖功能' },
   { path: '/teacher/import', icon: Upload, label: '积分导入' },
 ];
 

@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 def login_endpoint(login_data: TeacherLogin, db: Session = Depends(get_db)):
     try:
         result = login(db, login_data)
-        return {"code": 200, "message": "登录成功", "data": result.dict()}
+        return {"code": 200, "message": "登录成功", "data": result.model_dump()}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -30,4 +30,4 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
     if not teacher:
         raise HTTPException(status_code=401, detail="教师不存在")
     
-    return {"code": 200, "data": TeacherResponse.from_orm(teacher).dict()}
+    return {"code": 200, "data": TeacherResponse.model_validate(teacher).model_dump()}

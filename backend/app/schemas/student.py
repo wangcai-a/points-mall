@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 class StudentCreate(BaseModel):
@@ -11,15 +11,14 @@ class StudentUpdate(BaseModel):
     class_name: str
 
 class StudentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     name: str
     class_name: str
     total_points: int
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        orm_mode = True
 
 class StudentListResponse(BaseModel):
     list: list[StudentResponse]
@@ -38,3 +37,15 @@ class PointsHistoryResponse(BaseModel):
 class PointsHistoryListResponse(BaseModel):
     list: list[PointsHistoryResponse]
     total: int
+
+class StudentImportPreview(BaseModel):
+    row: int
+    name: str
+    class_name: str
+    total_points: int = 0
+    valid: bool = True
+    error: str | None = None
+
+class StudentImportResponse(BaseModel):
+    success_count: int
+    fail_count: int

@@ -26,7 +26,7 @@ def get_product_endpoint(product_id: int, db: Session = Depends(get_db)):
     product = get_product(db, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="商品不存在")
-    return {"code": 200, "data": ProductResponse.from_orm(product).dict()}
+    return {"code": 200, "data": ProductResponse.model_validate(product).model_dump()}
 
 @router.post("", response_model=dict)
 def create_product_endpoint(product: ProductCreate, db: Session = Depends(get_db)):

@@ -1,15 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GraduationCap, User, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/store/AuthContext';
 import { useApp } from '@/store/AppContext';
 
+const STORAGE_KEY = 'points-mall-login-cache';
+
 export const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const { showNotification } = useApp();
+
+  useEffect(() => {
+    const cachedData = localStorage.getItem(STORAGE_KEY);
+    if (cachedData) {
+      try {
+        const { username: savedUsername, password: savedPassword, remember: savedRemember } = JSON.parse(cachedData);
+        if (savedRemember && savedUsername) {
+          setUsername(savedUsername);
+          setPassword(savedPassword || '');
+          setRememberMe(savedRemember);
+        }
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,11 +39,29 @@ export const LoginPage = () => {
     setLoading(true);
     try {
       await login({ username, password });
+      
+      if (rememberMe) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          username,
+          password,
+          remember: true
+        }));
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
     } catch (error) {
       showNotification(error instanceof Error ? error.message : '登录失败', 'error');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClearCache = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setUsername('');
+    setPassword('');
+    setRememberMe(false);
+    showNotification('已清除账号密码缓存', 'info');
   };
 
   return (
@@ -35,7 +72,7 @@ export const LoginPage = () => {
             <div className="w-16 h-16 bg-primary-500 rounded-xl flex items-center justify-center mx-auto mb-4">
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-800">学生积分商城</h1>
+            <h1 className="text-2xl font-bold text-gray-800">积分商城</h1>
             <p className="text-gray-500 mt-2">教师登录</p>
           </div>
           <form onSubmit={handleSubmit}>
@@ -66,12 +103,27 @@ export const LoginPage = () => {
                   />
                 </div>
               </div>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
+                  />
+                  <span className="text-sm text-gray-600">记住密码</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleClearCache}
+                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  清除缓存
+                </button>
+              </div>
               <Button type="submit" loading={loading} className="w-full">
                 登录
               </Button>
-            </div>
-            <div className="mt-6 text-center text-sm text-gray-500">
-              提示：默认管理员账号 admin / admin123
             </div>
           </form>
         </div>

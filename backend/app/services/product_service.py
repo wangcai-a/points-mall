@@ -12,7 +12,7 @@ def get_products(db: Session, page: int = 1, page_size: int = 10, category: str 
     products = query.offset((page - 1) * page_size).limit(page_size).all()
     
     return {
-        "list": [ProductResponse.from_orm(p) for p in products],
+        "list": [ProductResponse.model_validate(p) for p in products],
         "total": total,
         "page": page,
         "page_size": page_size
@@ -47,6 +47,8 @@ def update_product(db: Session, product_id: int, product_update: ProductUpdate) 
         db_product.price_points = product_update.price_points
         db_product.stock = product_update.stock
         db_product.category = product_update.category
+        if product_update.image_url:
+            db_product.image_url = product_update.image_url
         db_product.updated_at = __import__('sqlalchemy').sql.func.current_timestamp()
         db.commit()
         db.refresh(db_product)

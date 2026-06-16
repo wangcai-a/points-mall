@@ -1,24 +1,29 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingBag, Star, Filter } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { Product } from '@/types';
 
 export const ProductList = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
+  const fetchProducts = async () => {
+    try {
+      const response = await productService.getProducts({ category: selectedCategory || undefined });
+      console.log('API返回的商品数据:', response);
+      setProducts(response.list);
+    } catch (error) {
+      console.error('获取商品列表失败:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await productService.getProducts({ category: selectedCategory || undefined });
-        setProducts(response.list);
-      } catch (error) {
-        console.error('获取商品列表失败:', error);
-      }
-    };
     fetchProducts();
-  }, [selectedCategory]);
+  }, [selectedCategory, location.pathname]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -67,7 +72,8 @@ export const ProductList = () => {
         {products.map((product) => (
           <div
             key={product.id}
-            className="bg-white rounded-xl shadow-card overflow-hidden hover:shadow-card-hover transition-shadow"
+            onClick={() => navigate(`/student/products/${product.id}`)}
+            className="bg-white rounded-xl shadow-card overflow-hidden hover:shadow-card-hover transition-shadow cursor-pointer hover:-translate-y-1"
           >
             <div className="h-48 bg-gray-100 flex items-center justify-center">
               {product.image_url ? (
@@ -75,10 +81,13 @@ export const ProductList = () => {
                   src={product.image_url}
                   alt={product.name}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    (e.target as HTMLImageElement).parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
+                  }}
                 />
-              ) : (
-                <ShoppingBag className="w-16 h-16 text-gray-300" />
-              )}
+              ) : null}
+              <ShoppingBag className={`w-16 h-16 text-gray-300 ${product.image_url ? 'hidden fallback-icon' : ''}`} />
             </div>
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">

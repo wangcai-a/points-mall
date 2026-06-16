@@ -165,7 +165,7 @@ export const ImportPage = () => {
                     <td className="px-4 py-3 text-sm">{item.row}</td>
                     <td className="px-4 py-3 text-sm">{item.student_id || '-'}</td>
                     <td className="px-4 py-3 text-sm">{item.name}</td>
-                    <td className="px-4 py-3 text-sm">{item.class}</td>
+                    <td className="px-4 py-3 text-sm">{item.class_name}</td>
                     <td className={`px-4 py-3 text-sm font-bold ${item.change_amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {item.change_amount > 0 ? '+' : ''}{item.change_amount}
                     </td>

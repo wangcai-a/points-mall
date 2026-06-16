@@ -21,6 +21,8 @@ interface TableProps<T> {
   onPageChange?: (page: number) => void;
   searchPlaceholder?: string;
   onSearch?: (keyword: string) => void;
+  onClickRow?: (row: T) => void;
+  selectedRowKey?: string | number;
 }
 
 export const Table = <T extends Record<string, unknown>>({
@@ -31,6 +33,8 @@ export const Table = <T extends Record<string, unknown>>({
   onPageChange,
   searchPlaceholder = '搜索...',
   onSearch,
+  onClickRow,
+  selectedRowKey,
 }: TableProps<T>) => {
   const [searchValue, setSearchValue] = useState('');
 
@@ -82,20 +86,30 @@ export const Table = <T extends Record<string, unknown>>({
                 </td>
               </tr>
             ) : (
-              data.map((row, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                >
-                  {columns.map((column) => (
-                    <td key={String(column.key)} className="px-4 py-3 text-sm text-gray-600">
-                      {column.render
-                        ? column.render(row[column.key], row)
-                        : String(row[column.key])}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              data.map((row, index) => {
+                const isSelected = selectedRowKey !== undefined && (row as Record<string, unknown>).id === selectedRowKey;
+                return (
+                  <tr
+                    key={index}
+                    className={`border-b border-gray-100 transition-colors ${
+                      isSelected
+                        ? 'bg-primary-50 border-l-4 border-l-primary-500'
+                        : onClickRow
+                        ? 'hover:bg-gray-50 cursor-pointer'
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onClick={() => onClickRow?.(row)}
+                  >
+                    {columns.map((column) => (
+                      <td key={String(column.key)} className="px-4 py-3 text-sm text-gray-600">
+                        {column.render
+                          ? column.render(row[column.key], row)
+                          : String(row[column.key])}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 class OrderCreate(BaseModel):
@@ -9,6 +9,8 @@ class OrderUpdate(BaseModel):
     status: str
 
 class OrderResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     student_id: int
     student_name: str
@@ -17,9 +19,6 @@ class OrderResponse(BaseModel):
     teacher_id: int
     status: str
     created_at: datetime
-
-    class Config:
-        orm_mode = True
 
 class OrderDetailResponse(BaseModel):
     id: int

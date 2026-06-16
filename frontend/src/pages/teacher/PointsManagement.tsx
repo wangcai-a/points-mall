@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Coins, Plus, Minus, Search } from 'lucide-react';
 import { studentService } from '@/services/studentService';
 import { pointsService } from '@/services/pointsService';
@@ -16,7 +16,13 @@ export const PointsManagement = () => {
   const [showDeductModal, setShowDeductModal] = useState(false);
   const [formData, setFormData] = useState({ amount: 0, reason: '' });
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [selectedClass, setSelectedClass] = useState<string>('');
   const { showNotification } = useApp();
+
+  const classList = useMemo(() => {
+    const classes = [...new Set(students.map((s) => s.class_name).filter(Boolean))];
+    return ['', ...classes];
+  }, [students]);
 
   useEffect(() => {
     fetchStudents();
@@ -28,12 +34,13 @@ export const PointsManagement = () => {
     }
   }, [selectedStudent]);
 
-  const fetchStudents = async (keyword = '') => {
+  const fetchStudents = async (keyword = '', className = '') => {
     try {
       const response = await studentService.getStudents({
         page: 1,
         pageSize: 100,
         name: keyword || undefined,
+        class: className || undefined,
       });
       setStudents(response.list);
     } catch (error) {
@@ -52,7 +59,12 @@ export const PointsManagement = () => {
 
   const handleSearch = (keyword: string) => {
     setSearchKeyword(keyword);
-    fetchStudents(keyword);
+    fetchStudents(keyword, selectedClass);
+  };
+
+  const handleClassChange = (className: string) => {
+    setSelectedClass(className);
+    fetchStudents(searchKeyword, className);
   };
 
   const handleAward = async () => {
@@ -104,7 +116,7 @@ export const PointsManagement = () => {
   const studentColumns = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: '姓名' },
-    { key: 'class', label: '班级' },
+    { key: 'class_name', label: '班级' },
     {
       key: 'total_points',
       label: '积分',
@@ -118,7 +130,8 @@ export const PointsManagement = () => {
       render: (_value, row) => (
         <div className="flex items-center gap-2">
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setSelectedStudent(row);
               setShowAwardModal(true);
             }}
@@ -127,7 +140,8 @@ export const PointsManagement = () => {
             <Plus className="w-4 h-4" />
           </button>
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setSelectedStudent(row);
               setShowDeductModal(true);
             }}
@@ -175,11 +189,36 @@ export const PointsManagement = () => {
           </div>
         </div>
 
+        <div className="flex items-center gap-4">
+          <select
+            value={selectedClass}
+            onChange={(e) => handleClassChange(e.target.value)}
+            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="">全部班级</option>
+            {classList.map((className) => (
+              <option key={className} value={className}>
+                {className || '全部班级'}
+              </option>
+            ))}
+          </select>
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchKeyword}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="搜索学生姓名..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+        </div>
+
         <Table
           data={students}
           columns={studentColumns}
-          searchPlaceholder="搜索学生姓名..."
-          onSearch={handleSearch}
+          onClickRow={(row) => setSelectedStudent(row)}
+          selectedRowKey={selectedStudent?.id}
         />
       </div>
 

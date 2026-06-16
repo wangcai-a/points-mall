@@ -1,9 +1,10 @@
-import { Outlet } from 'react-router-dom';
-import { GraduationCap, User, LogOut } from 'lucide-react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { GraduationCap, User, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/store/AuthContext';
 
 export const StudentLayout = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -15,17 +16,26 @@ export const StudentLayout = () => {
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-800">学生积分商城</h1>
+                <h1 className="text-xl font-bold text-gray-800">积分商城</h1>
                 <p className="text-sm text-gray-500">欢迎，{user?.name}</p>
               </div>
             </div>
-            <button
-              onClick={logout}
-              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="text-sm">退出登录</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate('/')}
+                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="text-sm">管理后台</span>
+              </button>
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="text-sm">退出登录</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>

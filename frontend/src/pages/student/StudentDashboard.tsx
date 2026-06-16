@@ -62,7 +62,7 @@ export const StudentDashboard = () => {
                 </span>
                 <div>
                   <p className="font-medium text-gray-800">{student.name}</p>
-                  <p className="text-sm text-gray-500">{student.class}</p>
+                  <p className="text-sm text-gray-500">{student.class_name}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export const StudentDashboard = () => {
               }`}
             >
               <p className="font-medium text-gray-800">{student.name}</p>
-              <p className="text-sm text-gray-500">{student.class}</p>
+              <p className="text-sm text-gray-500">{student.class_name}</p>
               <div className="flex items-center gap-1 mt-2">
                 <Coins className="w-4 h-4 text-yellow-500" />
                 <span className="font-bold text-primary-600">{student.total_points}</span>

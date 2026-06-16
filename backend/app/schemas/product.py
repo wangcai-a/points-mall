@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 class ProductCreate(BaseModel):
@@ -15,20 +15,20 @@ class ProductUpdate(BaseModel):
     price_points: int
     stock: int
     category: str = ""
+    image_url: str = ""
 
 class ProductResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     name: str
-    description: str
+    description: str | None = None
     price_points: int
     stock: int
-    image_url: str
-    category: str
+    image_url: str | None = None
+    category: str | None = None
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        orm_mode = True
 
 class ProductListResponse(BaseModel):
     list: list[ProductResponse]

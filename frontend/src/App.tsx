@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/store/AuthContext';
 import { AppProvider } from '@/store/AppContext';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -8,17 +8,19 @@ import { StudentDashboard } from '@/pages/student/StudentDashboard';
 import { ProductList } from '@/pages/student/ProductList';
 import { ProductDetail } from '@/pages/student/ProductDetail';
 import { StudentManagement } from '@/pages/teacher/StudentManagement';
+import { ProductManagement } from '@/pages/teacher/ProductManagement';
 import { PointsManagement } from '@/pages/teacher/PointsManagement';
 import { OrderManagement } from '@/pages/teacher/OrderManagement';
 import { LotteryPage } from '@/pages/teacher/LotteryPage';
 import { ImportPage } from '@/pages/teacher/ImportPage';
+import { Notification } from '@/components/ui/Notification';
 
 const ProtectedRoute = () => {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  return null;
+  return <Outlet />;
 };
 
 const AppRoutes = () => {
@@ -26,18 +28,19 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
-        <Route element={<StudentLayout />}>
-          <Route index element={<StudentDashboard />} />
-          <Route path="products" element={<ProductList />} />
-          <Route path="products/:id" element={<ProductDetail />} />
-        </Route>
         <Route element={<TeacherLayout />}>
           <Route index element={<StudentManagement />} />
           <Route path="teacher/students" element={<StudentManagement />} />
+          <Route path="teacher/products" element={<ProductManagement />} />
           <Route path="teacher/points" element={<PointsManagement />} />
           <Route path="teacher/orders" element={<OrderManagement />} />
           <Route path="teacher/lottery" element={<LotteryPage />} />
           <Route path="teacher/import" element={<ImportPage />} />
+        </Route>
+        <Route element={<StudentLayout />}>
+          <Route path="student" element={<StudentDashboard />} />
+          <Route path="student/products" element={<ProductList />} />
+          <Route path="student/products/:id" element={<ProductDetail />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -47,13 +50,14 @@ const AppRoutes = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppProvider>
-        <BrowserRouter>
+    <AppProvider>
+      <BrowserRouter>
+        <AuthProvider>
           <AppRoutes />
-        </BrowserRouter>
-      </AppProvider>
-    </AuthProvider>
+          <Notification />
+        </AuthProvider>
+      </BrowserRouter>
+    </AppProvider>
   );
 }
 

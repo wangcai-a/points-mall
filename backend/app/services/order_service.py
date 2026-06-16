@@ -103,10 +103,32 @@ def create_order(db: Session, order_create: OrderCreate, teacher_id: int) -> dic
 
 def update_order(db: Session, order_id: int, order_update: OrderUpdate) -> bool:
     order = db.query(Order).filter(Order.id == order_id).first()
-    if order:
-        order.status = order_update.status
-        if order_update.status == "completed":
-            order.completed_at = datetime.now()
-        db.commit()
-        return True
-    return False
+    if not order:
+        return False
+    
+    old_status = order.status
+    order.status = order_update.status
+    
+    if order_update.status == "completed":
+        order.completed_at = datetime.now()
+    
+    if old_status == "pending" and order_update.status == "cancelled":
+        student = db.query(Student).filter(Student.id == order.student_id).first()
+        product = db.query(Product).filter(Product.id == order.product_id).first()
+        
+        if student and product:
+            student.total_points += product.price_points
+            
+            points_record = PointsRecord(
+                student_id=order.student_id,
+                teacher_id=order.teacher_id,
+                change_amount=product.price_points,
+                reason=f"取消订单退还积分：{product.name}",
+                type="refund"
+            )
+            db.add(points_record)
+            
+            product.stock += 1
+    
+    db.commit()
+    return True

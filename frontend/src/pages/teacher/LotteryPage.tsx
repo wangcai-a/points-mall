@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Lottery, RotateCcw, Sparkles, Search } from 'lucide-react';
+import { Ticket, RotateCcw, Sparkles, Search } from 'lucide-react';
 import { studentService } from '@/services/studentService';
 import { lotteryService } from '@/services/lotteryService';
 import { Student, Prize, LotteryRecord, LotteryResult } from '@/types';
@@ -91,7 +91,7 @@ export const LotteryPage = () => {
   const studentColumns = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: '姓名' },
-    { key: 'class', label: '班级' },
+    { key: 'class_name', label: '班级' },
     {
       key: 'total_points',
       label: '积分',
@@ -141,7 +141,7 @@ export const LotteryPage = () => {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Lottery className="w-6 h-6 text-primary-600" />
+          <Ticket className="w-6 h-6 text-primary-600" />
           <h2 className="text-xl font-semibold text-gray-800">抽奖功能</h2>
         </div>
 
@@ -175,7 +175,7 @@ export const LotteryPage = () => {
 
             {selectedStudent && (
               <div className="p-4 bg-primary-50 rounded-lg">
-                <p className="text-gray-600">已选择: <span className="font-semibold">{selectedStudent.name}</span> ({selectedStudent.class})</p>
+                <p className="text-gray-600">已选择: <span className="font-semibold">{selectedStudent.name}</span> ({selectedStudent.class_name})</p>
                 <p className="text-gray-600 mt-1">当前积分: <span className="font-bold text-primary-600">{selectedStudent.total_points}</span></p>
               </div>
             )}
@@ -232,7 +232,7 @@ export const LotteryPage = () => {
             ) : (
               <>
                 <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Lottery className="w-10 h-10 text-gray-400" />
+                  <Ticket className="w-10 h-10 text-gray-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-600 mb-2">很遗憾，未中奖</h3>
                 <p className="text-gray-500">剩余积分: <span className="font-bold text-primary-600">{lotteryResult.remaining_points}</span></p>

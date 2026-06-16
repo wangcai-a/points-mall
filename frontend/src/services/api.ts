@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL: '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
-    const errorMessage = error.response?.data?.message || error.message;
+    const errorMessage = error.response?.data?.message || error.response?.data?.detail || error.message;
     throw new Error(errorMessage);
   }
 );
