@@ -45,24 +45,129 @@ print_info "        学生积分商城 - 一键部署脚本"
 print_info "         (适配阿里云 Linux 3)"
 print_info "=============================================="
 
+detect_os() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        OS="$ID"
+        VERSION="$VERSION_ID"
+    elif [ -f /etc/redhat-release ]; then
+        OS="centos"
+        VERSION=$(cat /etc/redhat-release | grep -o '[0-9]\+\.[0-9]\+' | head -1)
+    elif [ -f /etc/debian_version ]; then
+        OS="debian"
+        VERSION=$(cat /etc/debian_version)
+    else
+        OS="unknown"
+        VERSION="unknown"
+    fi
+    print_info "检测到操作系统: $OS $VERSION"
+}
+
+detect_os
+
 print_info "更新系统包..."
-yum update -y
+if [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "fedora" ]; then
+    yum update -y
+elif [ "$OS" = "debian" ] || [ "$OS" = "ubuntu" ]; then
+    apt-get update -y
+    apt-get upgrade -y
+else
+    print_warning "未知操作系统，跳过系统更新"
+fi
 
 print_info "安装基础依赖..."
-yum install -y git curl gcc gcc-c++ openssl-devel
+MISSING_DEPS=""
+
+if ! command -v git &> /dev/null; then
+    MISSING_DEPS="$MISSING_DEPS git"
+else
+    print_warning "git已安装，跳过"
+fi
+
+if ! command -v curl &> /dev/null; then
+    MISSING_DEPS="$MISSING_DEPS curl"
+else
+    print_warning "curl已安装，跳过"
+fi
+
+if ! command -v gcc &> /dev/null; then
+    MISSING_DEPS="$MISSING_DEPS gcc"
+else
+    print_warning "gcc已安装，跳过"
+fi
+
+if [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "fedora" ]; then
+    if ! command -v g++ &> /dev/null; then
+        MISSING_DEPS="$MISSING_DEPS gcc-c++"
+    else
+        print_warning "gcc-c++已安装，跳过"
+    fi
+    if ! rpm -q openssl-devel &> /dev/null; then
+        MISSING_DEPS="$MISSING_DEPS openssl-devel"
+    else
+        print_warning "openssl-devel已安装，跳过"
+    fi
+elif [ "$OS" = "debian" ] || [ "$OS" = "ubuntu" ]; then
+    if ! command -v g++ &> /dev/null; then
+        MISSING_DEPS="$MISSING_DEPS g++"
+    else
+        print_warning "g++已安装，跳过"
+    fi
+    if ! dpkg -l libssl-dev &> /dev/null; then
+        MISSING_DEPS="$MISSING_DEPS libssl-dev"
+    else
+        print_warning "libssl-dev已安装，跳过"
+    fi
+fi
+
+if [ -n "$MISSING_DEPS" ]; then
+    if [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "fedora" ]; then
+        yum install -y $MISSING_DEPS
+    elif [ "$OS" = "debian" ] || [ "$OS" = "ubuntu" ]; then
+        apt-get install -y $MISSING_DEPS
+    else
+        print_error "未知操作系统，无法安装基础依赖"
+    fi
+else
+    print_success "所有基础依赖已安装"
+fi
 
 print_info "安装Nginx..."
 if ! command -v nginx &> /dev/null; then
-    curl -o /tmp/nginx.rpm http://nginx.org/packages/centos/8/x86_64/RPMS/nginx-1.30.2-1.el8.ngx.x86_64.rpm
-    rpm -ivh /tmp/nginx.rpm || true
-    dnf install nginx -y || true
+    if [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "fedora" ]; then
+        curl -o /tmp/nginx.rpm http://nginx.org/packages/centos/8/x86_64/RPMS/nginx-1.30.2-1.el8.ngx.x86_64.rpm
+        rpm -ivh /tmp/nginx.rpm || true
+        dnf install nginx -y || true
+    elif [ "$OS" = "debian" ] || [ "$OS" = "ubuntu" ]; then
+        apt-get install -y nginx
+    else
+        print_error "未知操作系统，无法安装Nginx"
+    fi
 else
     print_warning "Nginx已安装，跳过"
 fi
 
 print_info "安装Node.js 20.x..."
-curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
-yum install -y nodejs
+NODE_INSTALLED=false
+if command -v node &> /dev/null; then
+    NODE_VERSION=$(node -v | cut -d'v' -f2)
+    print_warning "Node.js已安装，版本: v$NODE_VERSION"
+    NODE_INSTALLED=true
+else
+    print_warning "Node.js未安装，开始安装..."
+fi
+
+if [ "$NODE_INSTALLED" = false ]; then
+    if [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "fedora" ]; then
+        curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+        yum install -y nodejs
+    elif [ "$OS" = "debian" ] || [ "$OS" = "ubuntu" ]; then
+        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+        apt-get install -y nodejs
+    else
+        print_error "未知操作系统，无法安装Node.js"
+    fi
+fi
 
 print_info "创建项目目录..."
 mkdir -p "$PROJECT_DIR"

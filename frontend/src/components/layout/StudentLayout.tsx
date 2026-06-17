@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from 'react-router-dom';
-import { GraduationCap, User, LogOut, Settings } from 'lucide-react';
+import { GraduationCap, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/store/AuthContext';
 
 export const StudentLayout = () => {

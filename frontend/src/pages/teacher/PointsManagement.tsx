@@ -40,7 +40,7 @@ export const PointsManagement = () => {
         page: 1,
         pageSize: 100,
         name: keyword || undefined,
-        class: className || undefined,
+        class_name: className || undefined,
       });
       setStudents(response.list);
     } catch (error) {
@@ -120,14 +120,14 @@ export const PointsManagement = () => {
     {
       key: 'total_points',
       label: '积分',
-      render: (value) => (
+      render: (value: number) => (
         <span className="font-bold text-primary-600">{value}</span>
       ),
     },
     {
       key: 'actions',
       label: '操作',
-      render: (_value, row) => (
+      render: (_value: unknown, row: Student) => (
         <div className="flex items-center gap-2">
           <button
             onClick={(e) => {
@@ -158,15 +158,15 @@ export const PointsManagement = () => {
     {
       key: 'change_amount',
       label: '变动积分',
-      render: (value) => (
-        <span className={`font-bold ${(value as number) > 0 ? 'text-green-600' : 'text-red-600'}`}>
-          {(value as number) > 0 ? '+' : ''}{value}
+      render: (value: number) => (
+        <span className={`font-bold ${value > 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {value > 0 ? '+' : ''}{value}
         </span>
       ),
     },
     { key: 'reason', label: '原因' },
     { key: 'teacher_name', label: '操作教师' },
-    { key: 'type', label: '类型', render: (value) => {
+    { key: 'type', label: '类型', render: (value: string) => {
       const typeMap: Record<string, string> = {
         award: '奖励',
         deduct: '扣除',
@@ -174,9 +174,9 @@ export const PointsManagement = () => {
         lottery: '抽奖',
         import: '导入',
       };
-      return typeMap[value as string] || value;
+      return typeMap[value] || value;
     }},
-    { key: 'created_at', label: '时间', render: (value) => new Date(value as string).toLocaleString() },
+    { key: 'created_at', label: '时间', render: (value: string) => new Date(value).toLocaleString() },
   ];
 
   return (
@@ -214,7 +214,7 @@ export const PointsManagement = () => {
           </div>
         </div>
 
-        <Table
+        <Table<Student>
           data={students}
           columns={studentColumns}
           onClickRow={(row) => setSelectedStudent(row)}
@@ -235,7 +235,7 @@ export const PointsManagement = () => {
               </div>
             </div>
           )}
-          <Table
+          <Table<PointsRecord>
             data={pointsHistory}
             columns={historyColumns}
           />

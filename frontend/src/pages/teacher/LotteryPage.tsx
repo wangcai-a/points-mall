@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Ticket, RotateCcw, Sparkles, Search } from 'lucide-react';
+import { Ticket, RotateCcw, Sparkles } from 'lucide-react';
 import { studentService } from '@/services/studentService';
 import { lotteryService } from '@/services/lotteryService';
 import { Student, Prize, LotteryRecord, LotteryResult } from '@/types';
@@ -17,7 +17,6 @@ export const LotteryPage = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [lotteryResult, setLotteryResult] = useState<LotteryResult | null>(null);
   const [showResultModal, setShowResultModal] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState('');
   const { showNotification } = useApp();
 
   useEffect(() => {
@@ -58,7 +57,6 @@ export const LotteryPage = () => {
   };
 
   const handleSearch = (keyword: string) => {
-    setSearchKeyword(keyword);
     fetchStudents(keyword);
   };
 
@@ -95,8 +93,8 @@ export const LotteryPage = () => {
     {
       key: 'total_points',
       label: '积分',
-      render: (value) => (
-        <span className={`font-bold ${(value as number) >= costPoints ? 'text-primary-600' : 'text-red-600'}`}>
+      render: (value: number) => (
+        <span className={`font-bold ${value >= costPoints ? 'text-primary-600' : 'text-red-600'}`}>
           {value}
         </span>
       ),
@@ -104,7 +102,7 @@ export const LotteryPage = () => {
     {
       key: 'actions',
       label: '操作',
-      render: (_value, row) => (
+      render: (_value: unknown, row: Student) => (
         <button
           onClick={() => setSelectedStudent(row)}
           disabled={row.total_points < costPoints}
@@ -122,19 +120,19 @@ export const LotteryPage = () => {
 
   const recordColumns = [
     { key: 'student_name', label: '学生' },
-    { key: 'cost_points', label: '消耗积分', render: (value) => <span className="text-red-600">{value}</span> },
+    { key: 'cost_points', label: '消耗积分', render: (value: number) => <span className="text-red-600">{value}</span> },
     {
       key: 'is_win',
       label: '是否中奖',
-      render: (value) => (
-        <span className={`font-medium ${(value as boolean) ? 'text-green-600' : 'text-gray-500'}`}>
-          {(value as boolean) ? '中奖' : '未中奖'}
+      render: (value: boolean) => (
+        <span className={`font-medium ${value ? 'text-green-600' : 'text-gray-500'}`}>
+          {value ? '中奖' : '未中奖'}
         </span>
       ),
     },
-    { key: 'prize_name', label: '奖品', render: (value) => value || '-' },
+    { key: 'prize_name', label: '奖品', render: (value: string) => value || '-' },
     { key: 'teacher_name', label: '操作教师' },
-    { key: 'created_at', label: '时间', render: (value) => new Date(value as string).toLocaleString() },
+    { key: 'created_at', label: '时间', render: (value: string) => new Date(value).toLocaleString() },
   ];
 
   return (
@@ -200,7 +198,7 @@ export const LotteryPage = () => {
       <div className="space-y-6">
         <div className="bg-white rounded-xl shadow-card p-6">
           <h3 className="font-semibold text-gray-800 mb-4">选择学生</h3>
-          <Table
+          <Table<Student>
             data={students}
             columns={studentColumns}
             searchPlaceholder="搜索学生姓名..."
@@ -210,7 +208,7 @@ export const LotteryPage = () => {
 
         <div className="bg-white rounded-xl shadow-card p-6">
           <h3 className="font-semibold text-gray-800 mb-4">抽奖记录</h3>
-          <Table
+          <Table<LotteryRecord>
             data={records}
             columns={recordColumns}
           />

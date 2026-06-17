@@ -8,6 +8,7 @@ interface ButtonProps {
   onClick?: () => void;
   children: React.ReactNode;
   className?: string;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 const buttonVariants = {
@@ -31,6 +32,7 @@ export const Button = ({
   onClick,
   children,
   className = '',
+  type = 'button',
 }: ButtonProps) => {
   return (
     <button
@@ -51,6 +53,7 @@ export const Button = ({
       `}
       onClick={onClick}
       disabled={disabled || loading}
+      type={type}
     >
       {loading && <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />}
       {children}

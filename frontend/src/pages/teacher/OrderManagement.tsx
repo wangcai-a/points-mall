@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Check, X, Clock, Search } from 'lucide-react';
+import { ShoppingCart, Check, X, Clock } from 'lucide-react';
 import { orderService } from '@/services/orderService';
 import { Order, OrderStatus } from '@/types';
-import { Button } from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import { useApp } from '@/store/AppContext';
 
@@ -77,23 +76,23 @@ export const OrderManagement = () => {
     {
       key: 'status',
       label: '状态',
-      render: (value) => (
+      render: (value: OrderStatus) => (
         <div className="flex items-center gap-2">
-          {getStatusIcon(value as OrderStatus)}
+          {getStatusIcon(value)}
           <span className={`font-medium ${
-            (value as OrderStatus) === 'pending' ? 'text-yellow-600' :
-            (value as OrderStatus) === 'completed' ? 'text-green-600' : 'text-red-600'
+            value === 'pending' ? 'text-yellow-600' :
+            value === 'completed' ? 'text-green-600' : 'text-red-600'
           }`}>
-            {getStatusText(value as OrderStatus)}
+            {getStatusText(value)}
           </span>
         </div>
       ),
     },
-    { key: 'created_at', label: '创建时间', render: (value) => new Date(value as string).toLocaleString() },
+    { key: 'created_at', label: '创建时间', render: (value: string) => new Date(value).toLocaleString() },
     {
       key: 'actions',
       label: '操作',
-      render: (_value, row) => (
+      render: (_value: unknown, row: Order) => (
         <div className="flex items-center gap-2">
           {row.status === 'pending' && (
             <>
@@ -152,7 +151,7 @@ export const OrderManagement = () => {
         </div>
       </div>
 
-      <Table
+      <Table<Order>
         data={orders}
         columns={columns}
         loading={loading}
