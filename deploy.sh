@@ -113,7 +113,9 @@ fi
 
 print_info "安装前端依赖..."
 cd "$FRONTEND_DIR"
-npm install
+
+rm -rf node_modules package-lock.json
+npm install --platform=linux --arch=x64
 
 print_info "构建前端项目..."
 npm run build
