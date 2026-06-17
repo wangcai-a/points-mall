@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 interface Column<T> {
-  key: keyof T;
+  key: string;
   label: string;
   render?: (value: unknown, row: T) => React.ReactNode;
 }
