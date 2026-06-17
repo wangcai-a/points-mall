@@ -5,7 +5,7 @@ import { uploadService } from '@/services/uploadService';
 import { Product } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { Table } from '@/components/ui/Table';
+import { Table, Column } from '@/components/ui/Table';
 import { useApp } from '@/store/AppContext';
 
 const DEFAULT_IMAGES = [
@@ -170,14 +170,14 @@ export const ProductManagement = () => {
     setFormData(prev => ({ ...prev, image_url: '' }));
   };
 
-  const columns = [
+  const columns: Column<Product>[] = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: '商品名称' },
-    { key: 'description', label: '描述', render: (value: string) => value.length > 20 ? `${value.slice(0, 20)}...` : value },
+    { key: 'description', label: '描述', render: (value: unknown) => (value as string).length > 20 ? `${(value as string).slice(0, 20)}...` : value },
     { key: 'price_points', label: '价格(积分)' },
     { key: 'stock', label: '库存' },
     { key: 'category', label: '分类' },
-    { key: 'created_at', label: '创建时间', render: (value: string) => new Date(value).toLocaleDateString() },
+    { key: 'created_at', label: '创建时间', render: (value: unknown) => new Date(value as string).toLocaleDateString() },
     {
       key: 'actions',
       label: '操作',

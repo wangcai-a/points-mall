@@ -5,7 +5,7 @@ import { pointsService } from '@/services/pointsService';
 import { Student, PointsRecord } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { Table } from '@/components/ui/Table';
+import { Table, Column } from '@/components/ui/Table';
 import { useApp } from '@/store/AppContext';
 
 export const PointsManagement = () => {
@@ -113,14 +113,14 @@ export const PointsManagement = () => {
     }
   };
 
-  const studentColumns = [
+  const studentColumns: Column<Student>[] = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: '姓名' },
     { key: 'class_name', label: '班级' },
     {
       key: 'total_points',
       label: '积分',
-      render: (value: number) => (
+      render: (value: unknown) => (
         <span className="font-bold text-primary-600">{value}</span>
       ),
     },
@@ -154,19 +154,19 @@ export const PointsManagement = () => {
     },
   ];
 
-  const historyColumns = [
+  const historyColumns: Column<PointsRecord>[] = [
     {
       key: 'change_amount',
       label: '变动积分',
-      render: (value: number) => (
-        <span className={`font-bold ${value > 0 ? 'text-green-600' : 'text-red-600'}`}>
-          {value > 0 ? '+' : ''}{value}
+      render: (value: unknown) => (
+        <span className={`font-bold ${(value as number) > 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {(value as number) > 0 ? '+' : ''}{value}
         </span>
       ),
     },
     { key: 'reason', label: '原因' },
     { key: 'teacher_name', label: '操作教师' },
-    { key: 'type', label: '类型', render: (value: string) => {
+    { key: 'type', label: '类型', render: (value: unknown) => {
       const typeMap: Record<string, string> = {
         award: '奖励',
         deduct: '扣除',
@@ -174,9 +174,9 @@ export const PointsManagement = () => {
         lottery: '抽奖',
         import: '导入',
       };
-      return typeMap[value] || value;
+      return typeMap[value as string] || value;
     }},
-    { key: 'created_at', label: '时间', render: (value: string) => new Date(value).toLocaleString() },
+    { key: 'created_at', label: '时间', render: (value: unknown) => new Date(value as string).toLocaleString() },
   ];
 
   return (

@@ -46,9 +46,6 @@ def draw_lottery(db: Session, draw_data: LotteryDraw, teacher_id: int) -> Lotter
     
     is_win = prize["name"] != "谢谢参与"
     
-    if is_win:
-        student.total_points += prize["price_points"]
-    
     lottery_record = LotteryRecord(
         student_id=draw_data.student_id,
         teacher_id=teacher_id,

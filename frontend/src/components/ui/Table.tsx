@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
-interface Column<T> {
+export interface Column<T> {
   key: string;
   label: string;
   render?: (value: unknown, row: T) => React.ReactNode;

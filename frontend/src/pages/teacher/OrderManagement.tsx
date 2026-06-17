@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ShoppingCart, Check, X, Clock } from 'lucide-react';
 import { orderService } from '@/services/orderService';
 import { Order, OrderStatus } from '@/types';
-import { Table } from '@/components/ui/Table';
+import { Table, Column } from '@/components/ui/Table';
 import { useApp } from '@/store/AppContext';
 
 export const OrderManagement = () => {
@@ -69,26 +69,26 @@ export const OrderManagement = () => {
     }
   };
 
-  const columns = [
+  const columns: Column<Order>[] = [
     { key: 'id', label: '订单ID' },
     { key: 'student_name', label: '学生' },
     { key: 'product_name', label: '商品' },
     {
       key: 'status',
       label: '状态',
-      render: (value: OrderStatus) => (
+      render: (value: unknown) => (
         <div className="flex items-center gap-2">
-          {getStatusIcon(value)}
+          {getStatusIcon(value as OrderStatus)}
           <span className={`font-medium ${
-            value === 'pending' ? 'text-yellow-600' :
-            value === 'completed' ? 'text-green-600' : 'text-red-600'
+            (value as OrderStatus) === 'pending' ? 'text-yellow-600' :
+            (value as OrderStatus) === 'completed' ? 'text-green-600' : 'text-red-600'
           }`}>
-            {getStatusText(value)}
+            {getStatusText(value as OrderStatus)}
           </span>
         </div>
       ),
     },
-    { key: 'created_at', label: '创建时间', render: (value: string) => new Date(value).toLocaleString() },
+    { key: 'created_at', label: '创建时间', render: (value: unknown) => new Date(value as string).toLocaleString() },
     {
       key: 'actions',
       label: '操作',

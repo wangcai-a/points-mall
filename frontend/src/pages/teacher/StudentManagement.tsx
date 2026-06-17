@@ -4,7 +4,7 @@ import { studentService } from '@/services/studentService';
 import { Student, StudentImportPreview } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { Table } from '@/components/ui/Table';
+import { Table, Column } from '@/components/ui/Table';
 import { useApp } from '@/store/AppContext';
 
 export const StudentManagement = () => {
@@ -187,12 +187,12 @@ export const StudentManagement = () => {
     }
   };
 
-  const columns = [
+  const columns: Column<Student>[] = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: '姓名' },
     { key: 'class_name', label: '班级' },
     { key: 'total_points', label: '积分' },
-    { key: 'created_at', label: '创建时间', render: (value: string) => new Date(value).toLocaleDateString() },
+    { key: 'created_at', label: '创建时间', render: (value: unknown) => new Date(value as string).toLocaleDateString() },
     {
       key: 'actions',
       label: '操作',

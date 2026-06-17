@@ -5,7 +5,7 @@ import { lotteryService } from '@/services/lotteryService';
 import { Student, Prize, LotteryRecord, LotteryResult } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { Table } from '@/components/ui/Table';
+import { Table, Column } from '@/components/ui/Table';
 import { useApp } from '@/store/AppContext';
 
 export const LotteryPage = () => {
@@ -77,6 +77,7 @@ export const LotteryPage = () => {
       });
       setLotteryResult(result);
       setShowResultModal(true);
+      setSelectedStudent({ ...selectedStudent, total_points: result.remaining_points });
       fetchStudents();
       fetchRecords();
     } catch (error) {
@@ -86,15 +87,15 @@ export const LotteryPage = () => {
     }
   };
 
-  const studentColumns = [
+  const studentColumns: Column<Student>[] = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: '姓名' },
     { key: 'class_name', label: '班级' },
     {
       key: 'total_points',
       label: '积分',
-      render: (value: number) => (
-        <span className={`font-bold ${value >= costPoints ? 'text-primary-600' : 'text-red-600'}`}>
+      render: (value: unknown) => (
+        <span className={`font-bold ${(value as number) >= costPoints ? 'text-primary-600' : 'text-red-600'}`}>
           {value}
         </span>
       ),
@@ -118,21 +119,21 @@ export const LotteryPage = () => {
     },
   ];
 
-  const recordColumns = [
+  const recordColumns: Column<LotteryRecord>[] = [
     { key: 'student_name', label: '学生' },
-    { key: 'cost_points', label: '消耗积分', render: (value: number) => <span className="text-red-600">{value}</span> },
+    { key: 'cost_points', label: '消耗积分', render: (value: unknown) => <span className="text-red-600">{value}</span> },
     {
       key: 'is_win',
       label: '是否中奖',
-      render: (value: boolean) => (
-        <span className={`font-medium ${value ? 'text-green-600' : 'text-gray-500'}`}>
-          {value ? '中奖' : '未中奖'}
+      render: (value: unknown) => (
+        <span className={`font-medium ${(value as boolean) ? 'text-green-600' : 'text-gray-500'}`}>
+          {(value as boolean) ? '中奖' : '未中奖'}
         </span>
       ),
     },
-    { key: 'prize_name', label: '奖品', render: (value: string) => value || '-' },
+    { key: 'prize_name', label: '奖品', render: (value: unknown) => (value as string) || '-' },
     { key: 'teacher_name', label: '操作教师' },
-    { key: 'created_at', label: '时间', render: (value: string) => new Date(value).toLocaleString() },
+    { key: 'created_at', label: '时间', render: (value: unknown) => new Date(value as string).toLocaleString() },
   ];
 
   return (
