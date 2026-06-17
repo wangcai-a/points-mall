@@ -49,7 +49,7 @@ print_info "更新系统包..."
 yum update -y
 
 print_info "安装基础依赖..."
-yum install -y python3 python3-devel git curl gcc gcc-c++ openssl-devel
+yum install -y git curl gcc gcc-c++ openssl-devel
 
 print_info "安装Nginx..."
 if ! command -v nginx &> /dev/null; then
@@ -77,7 +77,22 @@ print_info "克隆项目代码..."
 git clone https://github.com/wangcai-a/points-mall.git "$PROJECT_DIR"
 
 print_info "设置Python虚拟环境..."
-python3 -m venv "$BACKEND_DIR/venv"
+if [ -f "/root/miniconda3/etc/profile.d/conda.sh" ]; then
+    source /root/miniconda3/etc/profile.d/conda.sh
+elif [ -f "/root/anaconda3/etc/profile.d/conda.sh" ]; then
+    source /root/anaconda3/etc/profile.d/conda.sh
+elif [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+    source "$HOME/miniconda3/etc/profile.d/conda.sh"
+elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then
+    source "$HOME/anaconda3/etc/profile.d/conda.sh"
+else
+    print_error "未找到conda安装路径，请检查conda是否已安装"
+fi
+
+CONDA_PYTHON=$(which python)
+print_info "使用conda Python: $CONDA_PYTHON"
+
+$CONDA_PYTHON -m venv "$BACKEND_DIR/venv"
 source "$BACKEND_DIR/venv/bin/activate"
 
 print_info "安装后端依赖..."
