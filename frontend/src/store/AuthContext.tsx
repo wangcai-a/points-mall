@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Teacher, LoginCredentials, LoginResponse } from '@/types';
+import { Teacher, LoginCredentials } from '@/types';
 import { authService } from '@/services/authService';
 
 interface AuthContextType {

@@ -192,11 +192,11 @@ export const StudentManagement = () => {
     { key: 'name', label: '姓名' },
     { key: 'class_name', label: '班级' },
     { key: 'total_points', label: '积分' },
-    { key: 'created_at', label: '创建时间', render: (value) => new Date(value as string).toLocaleDateString() },
+    { key: 'created_at', label: '创建时间', render: (value: string) => new Date(value).toLocaleDateString() },
     {
       key: 'actions',
       label: '操作',
-      render: (_value, row) => (
+      render: (_value: unknown, row: Student) => (
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleEdit(row)}

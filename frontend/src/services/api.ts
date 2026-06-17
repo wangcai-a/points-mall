@@ -32,7 +32,8 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
-    const errorMessage = error.response?.data?.message || error.response?.data?.detail || error.message;
+    const responseData = error.response?.data as { message?: string; detail?: string } | undefined;
+    const errorMessage = responseData?.message || responseData?.detail || error.message;
     throw new Error(errorMessage);
   }
 );
