@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 interface Column<T> {
   key: keyof T;
   label: string;
-  render?: (value: T[keyof T], row: T) => React.ReactNode;
+  render?: (value: unknown, row: T) => React.ReactNode;
 }
 
 interface PaginationConfig {
@@ -25,7 +25,7 @@ interface TableProps<T> {
   selectedRowKey?: string | number;
 }
 
-export const Table = <T extends Record<string, unknown>>({
+export const Table = <T extends object>({
   data,
   columns,
   loading = false,
@@ -100,13 +100,17 @@ export const Table = <T extends Record<string, unknown>>({
                     }`}
                     onClick={() => onClickRow?.(row)}
                   >
-                    {columns.map((column) => (
-                      <td key={String(column.key)} className="px-4 py-3 text-sm text-gray-600">
-                        {column.render
-                          ? column.render(row[column.key], row)
-                          : String(row[column.key])}
-                      </td>
-                    ))}
+                    {columns.map((column) => {
+                        const rowRecord = row as Record<string, unknown>;
+                        const value = rowRecord[String(column.key)];
+                        return (
+                          <td key={String(column.key)} className="px-4 py-3 text-sm text-gray-600">
+                            {column.render
+                              ? column.render(value, row)
+                              : String(value)}
+                          </td>
+                        );
+                      })}
                   </tr>
                 );
               })

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Edit, Trash2, Search, ShoppingBag, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, ShoppingBag, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { uploadService } from '@/services/uploadService';
 import { Product } from '@/types';
@@ -173,15 +173,15 @@ export const ProductManagement = () => {
   const columns = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: '商品名称' },
-    { key: 'description', label: '描述', render: (value) => (value as string).length > 20 ? `${(value as string).slice(0, 20)}...` : value },
+    { key: 'description', label: '描述', render: (value: string) => value.length > 20 ? `${value.slice(0, 20)}...` : value },
     { key: 'price_points', label: '价格(积分)' },
     { key: 'stock', label: '库存' },
     { key: 'category', label: '分类' },
-    { key: 'created_at', label: '创建时间', render: (value) => new Date(value as string).toLocaleDateString() },
+    { key: 'created_at', label: '创建时间', render: (value: string) => new Date(value).toLocaleDateString() },
     {
       key: 'actions',
       label: '操作',
-      render: (_value, row) => (
+      render: (_value: unknown, row: Product) => (
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleEdit(row)}

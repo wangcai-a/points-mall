@@ -82,6 +82,7 @@ export interface UpdateProductData {
   price_points?: number;
   stock?: number;
   category?: string;
+  image_url?: string;
 }
 
 export type OrderStatus = 'pending' | 'completed' | 'cancelled';

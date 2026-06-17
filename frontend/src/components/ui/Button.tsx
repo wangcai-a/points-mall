@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react';
 
 interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   disabled?: boolean;
@@ -16,6 +16,7 @@ const buttonVariants = {
   secondary: 'bg-secondary-500 hover:bg-secondary-600 text-white',
   danger: 'bg-red-500 hover:bg-red-600 text-white',
   ghost: 'bg-transparent hover:bg-gray-100 text-gray-700 border border-gray-300',
+  outline: 'bg-transparent hover:bg-primary-50 text-primary-600 border border-primary-500',
 };
 
 const buttonSizes = {
