@@ -85,6 +85,8 @@ elif [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
     source "$HOME/miniconda3/etc/profile.d/conda.sh"
 elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then
     source "$HOME/anaconda3/etc/profile.d/conda.sh"
+elif [ -f "/home/admin/miniconda3/etc/profile.d/conda.sh" ]; then
+    source "/home/admin/miniconda3/etc/profile.d/conda.sh"
 else
     print_error "未找到conda安装路径，请检查conda是否已安装"
 fi
