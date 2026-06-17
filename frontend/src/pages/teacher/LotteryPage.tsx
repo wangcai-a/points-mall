@@ -96,7 +96,7 @@ export const LotteryPage = () => {
       label: '积分',
       render: (value: unknown) => (
         <span className={`font-bold ${(value as number) >= costPoints ? 'text-primary-600' : 'text-red-600'}`}>
-          {value}
+          {String(value)}
         </span>
       ),
     },
@@ -121,7 +121,7 @@ export const LotteryPage = () => {
 
   const recordColumns: Column<LotteryRecord>[] = [
     { key: 'student_name', label: '学生' },
-    { key: 'cost_points', label: '消耗积分', render: (value: unknown) => <span className="text-red-600">{value}</span> },
+    { key: 'cost_points', label: '消耗积分', render: (value: unknown) => <span className="text-red-600">{String(value)}</span> },
     {
       key: 'is_win',
       label: '是否中奖',

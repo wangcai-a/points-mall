@@ -173,7 +173,7 @@ export const ProductManagement = () => {
   const columns: Column<Product>[] = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: '商品名称' },
-    { key: 'description', label: '描述', render: (value: unknown) => (value as string).length > 20 ? `${(value as string).slice(0, 20)}...` : value },
+    { key: 'description', label: '描述', render: (value: unknown) => { const str = value as string; return str.length > 20 ? `${str.slice(0, 20)}...` : str; } },
     { key: 'price_points', label: '价格(积分)' },
     { key: 'stock', label: '库存' },
     { key: 'category', label: '分类' },

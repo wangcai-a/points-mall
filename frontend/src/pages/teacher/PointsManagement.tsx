@@ -121,7 +121,7 @@ export const PointsManagement = () => {
       key: 'total_points',
       label: '积分',
       render: (value: unknown) => (
-        <span className="font-bold text-primary-600">{value}</span>
+        <span className="font-bold text-primary-600">{String(value)}</span>
       ),
     },
     {
@@ -160,7 +160,7 @@ export const PointsManagement = () => {
       label: '变动积分',
       render: (value: unknown) => (
         <span className={`font-bold ${(value as number) > 0 ? 'text-green-600' : 'text-red-600'}`}>
-          {(value as number) > 0 ? '+' : ''}{value}
+          {(value as number) > 0 ? '+' : ''}{String(value)}
         </span>
       ),
     },
@@ -174,7 +174,7 @@ export const PointsManagement = () => {
         lottery: '抽奖',
         import: '导入',
       };
-      return typeMap[value as string] || value;
+      return typeMap[value as string] || String(value);
     }},
     { key: 'created_at', label: '时间', render: (value: unknown) => new Date(value as string).toLocaleString() },
   ];
