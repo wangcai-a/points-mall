@@ -293,12 +293,31 @@ systemctl restart nginx
 
 print_info "设置防火墙规则..."
 if command -v firewall-cmd &> /dev/null; then
-    firewall-cmd --zone=public --add-service=http --permanent
-    firewall-cmd --zone=public --add-port=8000/tcp --permanent
-    firewall-cmd --reload
-    print_success "防火墙规则已配置"
+    if systemctl is-active --quiet firewalld; then
+        firewall-cmd --zone=public --add-service=http --permanent
+        firewall-cmd --zone=public --add-port=8000/tcp --permanent
+        firewall-cmd --reload
+        print_success "防火墙规则已配置"
+    else
+        print_warning "firewalld服务未运行，尝试启动..."
+        systemctl start firewalld
+        if [ $? -eq 0 ]; then
+            firewall-cmd --zone=public --add-service=http --permanent
+            firewall-cmd --zone=public --add-port=8000/tcp --permanent
+            firewall-cmd --reload
+            systemctl enable firewalld
+            print_success "防火墙规则已配置"
+        else
+            print_warning "无法启动firewalld服务，请手动配置防火墙"
+        fi
+    fi
+elif command -v ufw &> /dev/null; then
+    ufw allow 'Nginx Full'
+    ufw allow 8000/tcp
+    ufw reload
+    print_success "防火墙规则已配置(ufw)"
 else
-    print_warning "未安装firewalld，请手动配置防火墙"
+    print_warning "未安装防火墙管理工具，请手动配置防火墙"
 fi
 
 print_info "验证服务状态..."

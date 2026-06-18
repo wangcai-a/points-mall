@@ -17,7 +17,7 @@ $modeLower = $mode.ToLower()
 
 if ($modeLower -eq "all" -or $modeLower -eq "backend") {
     Write-Host "[1/2] Starting backend..." -ForegroundColor Yellow
-    $backendBat = "@echo off`nD:\miniconda3\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload"
+    $backendBat = "@echo off`nD:\miniconda3\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     $backendBatPath = Join-Path $env:TEMP "start_backend.bat"
     Set-Content -Path $backendBatPath -Value $backendBat -Encoding ASCII
     $processes += Start-Process -FilePath "cmd.exe" -ArgumentList "/c", $backendBatPath -PassThru -WindowStyle Hidden
