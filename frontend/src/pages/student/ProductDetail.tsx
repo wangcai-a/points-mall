@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { ShoppingBag, Star, ArrowLeft, AlertCircle, Search, User } from 'lucide-react';
+import { ShoppingBag, Star, ArrowLeft, AlertCircle, Search, User, CheckCircle, Coins, Gift, Award } from 'lucide-react';
 import { productService } from '@/services/productService';
 import { studentService } from '@/services/studentService';
 import { orderService } from '@/services/orderService';
-import { Product, Student } from '@/types';
+import { Product, Student, CreateOrderResponse } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useApp } from '@/store/AppContext';
@@ -15,6 +15,8 @@ export const ProductDetail = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
   const [showExchangeModal, setShowExchangeModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [exchangeResult, setExchangeResult] = useState<CreateOrderResponse | null>(null);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedClass, setSelectedClass] = useState<string>('');
   const { showNotification } = useApp();
@@ -60,9 +62,10 @@ export const ProductDetail = () => {
   const handleExchange = async () => {
     if (!selectedStudent || !product) return;
     try {
-      await orderService.createOrder({ student_id: selectedStudent, product_id: product.id });
-      showNotification('兑换成功', 'success');
+      const result = await orderService.createOrder({ student_id: selectedStudent, product_id: product.id });
+      setExchangeResult(result);
       setShowExchangeModal(false);
+      setShowSuccessModal(true);
       setSelectedStudent(null);
       setSearchKeyword('');
       await fetchProduct();
@@ -252,6 +255,84 @@ export const ProductDetail = () => {
               确认兑换
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          setExchangeResult(null);
+        }}
+        title=""
+        className="!max-w-md"
+      >
+        <div className="flex flex-col items-center py-8">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-bounce">
+            <CheckCircle className="w-12 h-12 text-green-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">兑换成功！</h2>
+          <p className="text-gray-500 mb-8">商品已成功兑换，订单已创建</p>
+          
+          {exchangeResult && (
+            <div className="w-full space-y-4 bg-gray-50 rounded-xl p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-primary-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">兑换学生</p>
+                    <p className="font-semibold text-gray-800">{exchangeResult.student_name}</p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 bg-gray-200 rounded-full text-sm text-gray-600">
+                  {exchangeResult.student_class}
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Gift className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">兑换商品</p>
+                    <p className="font-semibold text-gray-800">{exchangeResult.product_name}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-red-500">
+                  <Coins className="w-5 h-5" />
+                  <span className="font-bold">{exchangeResult.cost_points}</span>
+                </div>
+              </div>
+              
+              <div className="h-px bg-gray-200" />
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <Award className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">剩余积分</p>
+                    <p className="font-bold text-2xl text-primary-600">{exchangeResult.remaining_points}</p>
+                  </div>
+                </div>
+                <span className="text-sm text-gray-400">订单号: #{exchangeResult.order_id}</span>
+              </div>
+            </div>
+          )}
+          
+          <Button
+            onClick={() => {
+              setShowSuccessModal(false);
+              setExchangeResult(null);
+            }}
+            className="mt-8 w-full"
+          >
+            完成
+          </Button>
         </div>
       </Modal>
     </div>

@@ -127,6 +127,11 @@ export interface PaginatedOrders {
 
 export interface CreateOrderResponse {
   order_id: number;
+  student_name: string;
+  student_class: string;
+  remaining_points: number;
+  product_name: string;
+  cost_points: number;
 }
 
 export interface LotteryResult {

@@ -99,7 +99,14 @@ def create_order(db: Session, order_create: OrderCreate, teacher_id: int) -> dic
     db.commit()
     db.refresh(order)
     
-    return {"order_id": order.id}
+    return {
+        "order_id": order.id,
+        "student_name": student.name,
+        "student_class": student.class_name,
+        "remaining_points": student.total_points,
+        "product_name": product.name,
+        "cost_points": product.price_points
+    }
 
 def update_order(db: Session, order_id: int, order_update: OrderUpdate) -> bool:
     order = db.query(Order).filter(Order.id == order_id).first()
