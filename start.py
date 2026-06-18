@@ -7,7 +7,6 @@ import signal
 import time
 import threading
 import argparse
-from queue import Queue, Empty
 
 BACKEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backend")
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
@@ -16,21 +15,41 @@ FRONTEND_PORT = 5173
 
 IS_WINDOWS = platform.system() == "Windows"
 IS_LINUX = platform.system() == "Linux"
-PLATFORM_NAME = "Windows" if IS_WINDOWS else ("Linux" if IS_LINUX else platform.system())
+IS_MACOS = platform.system() == "Darwin"
+PLATFORM_NAME = "Windows" if IS_WINDOWS else ("Linux" if IS_LINUX else ("macOS" if IS_MACOS else platform.system()))
 
 processes = []
 backend_proc = None
 
+
 def get_python_path():
-    if platform.system() == "Windows":
+    system = platform.system()
+    if system == "Windows":
         candidates = [
             r"D:\miniconda3\python.exe",
             r"C:\miniconda3\python.exe",
             r"C:\ProgramData\Anaconda3\python.exe",
+            r"C:\Python311\python.exe",
+            r"C:\Python310\python.exe",
+            r"C:\Python39\python.exe",
         ]
         for path in candidates:
             if os.path.exists(path):
                 return path
+    elif system == "Darwin":
+        candidates = [
+            "/opt/homebrew/bin/python3",
+            "/usr/local/bin/python3",
+            "/usr/bin/python3",
+            "python3",
+        ]
+        for cmd in candidates:
+            try:
+                result = subprocess.run([cmd, "--version"], capture_output=True)
+                if result.returncode == 0:
+                    return cmd
+            except:
+                continue
     for cmd in ["python3", "python"]:
         try:
             result = subprocess.run([cmd, "--version"], capture_output=True)
@@ -40,17 +59,35 @@ def get_python_path():
             continue
     return "python"
 
+
 def get_npm_path():
-    if platform.system() == "Windows":
+    system = platform.system()
+    if system == "Windows":
         candidates = [
             r"C:\Program Files\nodejs\npm.cmd",
+            r"C:\Program Files\nodejs\npm",
         ]
         for path in candidates:
             if os.path.exists(path):
                 return path
+    elif system == "Darwin":
+        candidates = [
+            "/opt/homebrew/bin/npm",
+            "/usr/local/bin/npm",
+            "/usr/bin/npm",
+            "npm",
+        ]
+        for cmd in candidates:
+            try:
+                result = subprocess.run([cmd, "--version"], capture_output=True)
+                if result.returncode == 0:
+                    return cmd
+            except:
+                continue
     return "npm"
 
-def stream_output(pipe, label, queue):
+
+def stream_output(pipe, label):
     try:
         for line in iter(pipe.readline, ''):
             if line:
@@ -58,15 +95,14 @@ def stream_output(pipe, label, queue):
     except:
         pass
 
+
 def start_backend_windows():
-    """Windows 平台启动后端"""
     global backend_proc
     print("\n[Backend] Starting backend (Windows)...")
     python = get_python_path()
     cmd = [python, "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", str(BACKEND_PORT), "--reload"]
     env = os.environ.copy()
     env["PATH"] = r"D:\miniconda3;D:\miniconda3\Scripts;" + env.get("PATH", "")
-    # Windows 下使用 CREATE_NEW_PROCESS_GROUP，使 Ctrl+C 事件可正确传递
     creationflags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
     backend_proc = subprocess.Popen(
         cmd, cwd=BACKEND_DIR, env=env,
@@ -75,18 +111,16 @@ def start_backend_windows():
         creationflags=creationflags,
     )
     processes.append(backend_proc)
-    t = threading.Thread(target=stream_output, args=(backend_proc.stdout, "Backend", None), daemon=True)
+    t = threading.Thread(target=stream_output, args=(backend_proc.stdout, "Backend"), daemon=True)
     t.start()
     return backend_proc
 
 
-def start_backend_linux():
-    """Linux 平台启动后端"""
+def start_backend_posix():
     global backend_proc
-    print("\n[Backend] Starting backend (Linux)...")
+    print(f"\n[Backend] Starting backend ({PLATFORM_NAME})...")
     python = get_python_path()
     cmd = [python, "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", str(BACKEND_PORT), "--reload"]
-    # Linux 下使用 setsid 创建新进程组，便于向整组进程发信号
     backend_proc = subprocess.Popen(
         cmd, cwd=BACKEND_DIR,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -94,13 +128,12 @@ def start_backend_linux():
         preexec_fn=os.setsid,
     )
     processes.append(backend_proc)
-    t = threading.Thread(target=stream_output, args=(backend_proc.stdout, "Backend", None), daemon=True)
+    t = threading.Thread(target=stream_output, args=(backend_proc.stdout, "Backend"), daemon=True)
     t.start()
     return backend_proc
 
 
 def start_frontend_windows():
-    """Windows 平台启动前端"""
     print("[Frontend] Starting frontend (Windows)...")
     npm = get_npm_path()
     cmd = [npm, "run", "dev"]
@@ -114,14 +147,13 @@ def start_frontend_windows():
         creationflags=creationflags,
     )
     processes.append(proc)
-    t = threading.Thread(target=stream_output, args=(proc.stdout, "Frontend", None), daemon=True)
+    t = threading.Thread(target=stream_output, args=(proc.stdout, "Frontend"), daemon=True)
     t.start()
     return proc
 
 
-def start_frontend_linux():
-    """Linux 平台启动前端"""
-    print("[Frontend] Starting frontend (Linux)...")
+def start_frontend_posix():
+    print(f"[Frontend] Starting frontend ({PLATFORM_NAME})...")
     npm = get_npm_path()
     cmd = [npm, "run", "dev"]
     proc = subprocess.Popen(
@@ -131,33 +163,26 @@ def start_frontend_linux():
         preexec_fn=os.setsid,
     )
     processes.append(proc)
-    t = threading.Thread(target=stream_output, args=(proc.stdout, "Frontend", None), daemon=True)
+    t = threading.Thread(target=stream_output, args=(proc.stdout, "Frontend"), daemon=True)
     t.start()
     return proc
 
 
 def start_backend():
-    """根据平台选择对应的后端启动方法"""
     if IS_WINDOWS:
         return start_backend_windows()
-    elif IS_LINUX:
-        return start_backend_linux()
     else:
-        raise OSError(f"Unsupported platform: {platform.system()}")
+        return start_backend_posix()
 
 
 def start_frontend():
-    """根据平台选择对应的前端启动方法"""
     if IS_WINDOWS:
         return start_frontend_windows()
-    elif IS_LINUX:
-        return start_frontend_linux()
     else:
-        raise OSError(f"Unsupported platform: {platform.system()}")
+        return start_frontend_posix()
 
 
 def stop_services_windows(signum=None, frame=None):
-    """Windows 平台停止服务：terminate() 内部调用 TerminateProcess"""
     print("\n\nStopping services (Windows)...")
     for proc in processes:
         try:
@@ -172,9 +197,8 @@ def stop_services_windows(signum=None, frame=None):
     sys.exit(0)
 
 
-def stop_services_linux(signum=None, frame=None):
-    """Linux 平台停止服务：向整个进程组发送信号"""
-    print("\n\nStopping services (Linux)...")
+def stop_services_posix(signum=None, frame=None):
+    print(f"\n\nStopping services ({PLATFORM_NAME})...")
     for proc in processes:
         try:
             os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
@@ -189,28 +213,22 @@ def stop_services_linux(signum=None, frame=None):
 
 
 def stop_services(signum=None, frame=None):
-    """根据平台选择对应的停止服务方法"""
     if IS_WINDOWS:
         stop_services_windows(signum, frame)
-    elif IS_LINUX:
-        stop_services_linux(signum, frame)
     else:
-        # 兜底逻辑
-        for proc in processes:
-            try:
-                proc.terminate()
-                proc.wait(timeout=3)
-            except Exception:
-                try:
-                    proc.kill()
-                except Exception:
-                    pass
-        sys.exit(0)
+        stop_services_posix(signum, frame)
+
 
 def main():
+    global BACKEND_PORT, FRONTEND_PORT
     parser = argparse.ArgumentParser(description="Student Points Mall Startup Script")
     parser.add_argument("--mode", choices=["all", "backend", "frontend"], default="all", help="Startup mode")
+    parser.add_argument("--backend-port", type=int, default=BACKEND_PORT, help=f"Backend port (default: {BACKEND_PORT})")
+    parser.add_argument("--frontend-port", type=int, default=FRONTEND_PORT, help=f"Frontend port (default: {FRONTEND_PORT})")
     args = parser.parse_args()
+
+    BACKEND_PORT = args.backend_port
+    FRONTEND_PORT = args.frontend_port
 
     print("=" * 50)
     print("  Student Points Mall - Startup Script")
@@ -218,7 +236,6 @@ def main():
     print(f"  Mode: {args.mode}")
     print("=" * 50)
 
-    # Windows 不支持 SIGTERM，仅注册 SIGINT（Ctrl+C）
     if IS_WINDOWS:
         signal.signal(signal.SIGINT, stop_services)
     else:
@@ -228,7 +245,7 @@ def main():
     if args.mode in ["all", "backend"]:
         start_backend()
         time.sleep(2)
-        
+
     if args.mode in ["all", "frontend"]:
         start_frontend()
 
@@ -236,15 +253,16 @@ def main():
     print("  Services started!")
     print("=" * 50)
     if args.mode in ["all", "backend"]:
-        print(f"  Backend: http://localhost:{BACKEND_PORT}")
-        print(f"  API Docs: http://localhost:{BACKEND_PORT}/docs")
+        print(f"  Backend: http://0.0.0.0:{BACKEND_PORT}")
+        print(f"  API Docs: http://0.0.0.0:{BACKEND_PORT}/docs")
     if args.mode in ["all", "frontend"]:
-        print(f"  Frontend: http://localhost:{FRONTEND_PORT}")
+        print(f"  Frontend: http://0.0.0.0:{FRONTEND_PORT}")
     print("=" * 50)
     print("\nPress Ctrl+C to stop services...\n")
 
     while True:
         time.sleep(1)
+
 
 if __name__ == "__main__":
     main()
